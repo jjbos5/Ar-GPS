@@ -4,7 +4,6 @@ import { ArrowLeft, Search, MapPin } from 'lucide-react';
 import { mockDestinations } from '../data/mockData';
 import type { Destination } from '../types';
 
-// Category filter options
 const categories = [
   { value: 'all', label: 'All' },
   { value: 'academic', label: 'Academic' },
@@ -24,11 +23,9 @@ export default function DestinationsPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [loading, setLoading] = useState(true);
 
-  // Simulate fetching data
   useEffect(() => {
     const loadDestinations = async () => {
       setLoading(true);
-      // Simulate API call delay
       setTimeout(() => {
         setDestinations(mockDestinations);
         setLoading(false);
@@ -37,7 +34,6 @@ export default function DestinationsPage() {
     loadDestinations();
   }, []);
 
-  // Filter destinations
   const filteredDestinations = destinations.filter(dest => {
     const matchesSearch = dest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          dest.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -46,7 +42,6 @@ export default function DestinationsPage() {
   });
 
   const handleSelectDestination = (destination: Destination) => {
-    // Store selected destination and navigate to map
     localStorage.setItem('selectedDestination', JSON.stringify(destination));
     navigate('/map');
   };
@@ -124,7 +119,6 @@ export default function DestinationsPage() {
   );
 }
 
-// Destination Card Component with T-Bone popup
 function DestinationCard({ 
   destination, 
   onSelect 
@@ -134,7 +128,6 @@ function DestinationCard({
 }) {
   const [isHovered, setIsHovered] = useState(false);
 
-  // Get category emoji
   const getCategoryEmoji = (category: string) => {
     const emojis: Record<string, string> = {
       academic: '📚',
@@ -154,21 +147,20 @@ function DestinationCard({
       onClick={() => onSelect(destination)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="relative bg-white rounded-2xl shadow-md hover:shadow-xl transition-all cursor-pointer overflow-hidden group"
+      onTouchStart={() => setIsHovered(true)}
+      className="relative bg-white rounded-2xl shadow-md hover:shadow-xl transition-all cursor-pointer overflow-visible group"
     >
-      {/* T-Bone Popup - appears on right side */}
+      {/* T-Bone Peeking from Right Side */}
       <div 
-        className={`absolute top-1/2 -translate-y-1/2 -right-2 z-10 transition-all duration-300 ${
+        className={`absolute -right-3 top-1/2 -translate-y-1/2 z-20 transition-all duration-300 ${
           isHovered ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
         }`}
       >
-        <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center shadow-lg">
-          <span className="text-3xl">🐕</span>
-        </div>
-        {/* Pointing effect */}
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full">
-          <span className="text-2xl">👉</span>
-        </div>
+        <img 
+          src="/tbone-happy.png" 
+          alt="T-Bone" 
+          className="w-20 h-20 object-contain drop-shadow-lg"
+        />
       </div>
 
       <div className="flex gap-4 p-4">
@@ -182,7 +174,7 @@ function DestinationCard({
         </div>
 
         {/* Info */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 pr-8">
           <div className="flex items-start justify-between gap-2 mb-2">
             <h3 className="font-bold text-lg text-[#002855] truncate">
               {destination.name}
@@ -208,7 +200,7 @@ function DestinationCard({
         </div>
       </div>
 
-      {/* Hover effect overlay */}
+      {/* Hover Border Effect */}
       <div className={`absolute inset-0 border-4 border-[#FDB515] rounded-2xl pointer-events-none transition-opacity ${
         isHovered ? 'opacity-100' : 'opacity-0'
       }`}></div>

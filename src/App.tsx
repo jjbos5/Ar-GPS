@@ -6,6 +6,7 @@ import { lazy, Suspense } from 'react';
 
 const DestinationsPage = lazy(() => import('./pages/DestinationPage'));
 const MapPage = lazy(() => import('./pages/MapPage'));
+const ARPage = lazy(() => import('./pages/ARPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
 
@@ -24,6 +25,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/destinations" element={<DestinationsPage />} />
           <Route path="/map" element={<MapPage />} />
+          <Route path="/ar" element={<ARPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/about" element={<AboutPage />} />
         </Routes>

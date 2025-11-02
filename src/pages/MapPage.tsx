@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Navigation as NavigationIcon, MapPin } from 'lucide-react';
+import { ArrowLeft, Navigation as NavigationIcon } from 'lucide-react';
 import type { Destination } from '../types';
 
 export default function MapPage() {
@@ -8,31 +8,27 @@ export default function MapPage() {
   const [destination, setDestination] = useState<Destination | null>(null);
 
   useEffect(() => {
-    // Get selected destination from localStorage
     const stored = localStorage.getItem('selectedDestination');
     if (stored) {
       setDestination(JSON.parse(stored));
     } else {
-      // No destination selected, go back
       navigate('/destinations');
     }
   }, [navigate]);
 
   const handleStartAR = async () => {
-  // Check if device has camera
-  try {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      alert('Camera not available on this device. Please use a mobile device.');
-      return;
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('Camera not available on this device. Please use a mobile device.');
+        return;
+      }
+      
+      await navigator.mediaDevices.getUserMedia({ video: true });
+      navigate('/ar');
+    } catch (error) {
+      alert('Camera access denied or not available');
     }
-    
-    // Try to access camera
-    await navigator.mediaDevices.getUserMedia({ video: true });
-    navigate('/ar');
-  } catch (error) {
-    alert('Camera access denied or not available');
-  }
-};
+  };
 
   if (!destination) {
     return (
@@ -60,21 +56,31 @@ export default function MapPage() {
         </div>
       </div>
 
-      {/* Map Placeholder */}
-      <div className="flex-1 bg-gray-200 relative">
+      {/* Map Placeholder with T-Bone */}
+      <div className="flex-1 bg-gradient-to-b from-blue-50 to-blue-100 relative overflow-hidden">
+        {/* T-Bone Waving */}
+        <div className="absolute left-6 bottom-20 z-10">
+          <img 
+            src="/popup_tbone.png" 
+            alt="popup_tbone" 
+            className="w-32 h-32 object-contain drop-shadow-2xl"
+          />
+        </div>
+
+        {/* Map Placeholder */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center p-6">
-            <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 mb-2">Map view coming soon!</p>
+          <div className="text-center p-6 bg-white/80 backdrop-blur rounded-2xl shadow-lg">
+            <div className="text-6xl mb-4">🗺️</div>
+            <p className="text-gray-700 font-semibold mb-2">Interactive Map Coming Soon!</p>
             <p className="text-sm text-gray-500">
-              Will show interactive map with your route
+              Will show your route with turn-by-turn directions
             </p>
           </div>
         </div>
       </div>
 
       {/* Bottom Panel */}
-      <div className="bg-white shadow-lg rounded-t-3xl p-6">
+      <div className="bg-white shadow-2xl rounded-t-3xl p-6">
         <div className="flex items-center gap-4 mb-6">
           <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-200 flex-shrink-0">
             <img 
@@ -90,18 +96,18 @@ export default function MapPage() {
         </div>
 
         {/* Stats */}
-        <div className="flex gap-6 mb-6 text-center">
-          <div className="flex-1">
+        <div className="grid grid-cols-3 gap-4 mb-6 text-center">
+          <div>
             <div className="text-2xl font-bold text-[#002855]">0.3</div>
-            <div className="text-xs text-gray-500">MILES</div>
+            <div className="text-xs text-gray-500 uppercase">Miles</div>
           </div>
-          <div className="flex-1">
+          <div>
             <div className="text-2xl font-bold text-[#002855]">5</div>
-            <div className="text-xs text-gray-500">MINUTES</div>
+            <div className="text-xs text-gray-500 uppercase">Minutes</div>
           </div>
-          <div className="flex-1">
-            <div className="text-2xl font-bold text-[#002855]">👟</div>
-            <div className="text-xs text-gray-500">WALKING</div>
+          <div>
+            <div className="text-2xl">🚶</div>
+            <div className="text-xs text-gray-500 uppercase">Walking</div>
           </div>
         </div>
 
