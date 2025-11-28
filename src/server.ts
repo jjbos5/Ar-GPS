@@ -172,14 +172,14 @@ app.get('/api/locations', (req: Request, res: Response) => {
 // Get specific location by ID
 app.get('/api/locations/:id', (req: Request, res: Response) => {
   const location = campusLocations.find(loc => loc.id === req.params.id);
-  
+
   if (!location) {
     return res.status(404).json({
       success: false,
       error: 'Location not found'
     });
   }
-  
+
   res.json({
     success: true,
     data: location
@@ -189,21 +189,21 @@ app.get('/api/locations/:id', (req: Request, res: Response) => {
 // Search locations by name or type
 app.get('/api/locations/search', (req: Request, res: Response) => {
   const { query, type } = req.query;
-  
+
   let results = campusLocations;
-  
+
   if (type) {
     results = results.filter(loc => loc.type === type);
   }
-  
+
   if (query) {
     const searchTerm = String(query).toLowerCase();
-    results = results.filter(loc => 
+    results = results.filter(loc =>
       loc.name.toLowerCase().includes(searchTerm) ||
       loc.description?.toLowerCase().includes(searchTerm)
     );
   }
-  
+
   res.json({
     success: true,
     data: results
@@ -213,16 +213,16 @@ app.get('/api/locations/search', (req: Request, res: Response) => {
 // Get route between two points
 app.post('/api/route', (req: Request, res: Response) => {
   const { start, end } = req.body;
-  
+
   if (!start || !end || !start.lat || !start.lng || !end.lat || !end.lng) {
     return res.status(400).json({
       success: false,
       error: 'Invalid coordinates. Please provide start and end with lat/lng'
     });
   }
-  
+
   const route = findRoute(start.lat, start.lng, end.lat, end.lng);
-  
+
   res.json({
     success: true,
     data: route
@@ -232,24 +232,24 @@ app.post('/api/route', (req: Request, res: Response) => {
 // Get route by location IDs
 app.post('/api/route/locations', (req: Request, res: Response) => {
   const { startId, endId } = req.body;
-  
+
   const startLocation = campusLocations.find(loc => loc.id === startId);
   const endLocation = campusLocations.find(loc => loc.id === endId);
-  
+
   if (!startLocation || !endLocation) {
     return res.status(404).json({
       success: false,
       error: 'Start or end location not found'
     });
   }
-  
+
   const route = findRoute(
     startLocation.coordinates.lat,
     startLocation.coordinates.lng,
     endLocation.coordinates.lat,
     endLocation.coordinates.lng
   );
-  
+
   res.json({
     success: true,
     data: {
@@ -263,14 +263,14 @@ app.post('/api/route/locations', (req: Request, res: Response) => {
 // Get nearby locations
 app.post('/api/nearby', (req: Request, res: Response) => {
   const { lat, lng, radius = 500 } = req.body; // radius in meters
-  
+
   if (!lat || !lng) {
     return res.status(400).json({
       success: false,
       error: 'Invalid coordinates'
     });
   }
-  
+
   const nearby = campusLocations
     .map(loc => ({
       ...loc,
@@ -278,7 +278,7 @@ app.post('/api/nearby', (req: Request, res: Response) => {
     }))
     .filter(loc => loc.distance <= radius)
     .sort((a, b) => a.distance - b.distance);
-  
+
   res.json({
     success: true,
     data: nearby
