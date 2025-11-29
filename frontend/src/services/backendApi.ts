@@ -1,6 +1,15 @@
-// Service to connect to your teammate's Express backend
+// Detect if running on local network or real HTTPS domain
+const isLocal =
+  window.location.hostname === "localhost" ||
+  window.location.hostname.startsWith("192.168.");
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+// 🔥 FINAL URL SELECTOR
+const API_BASE_URL = isLocal
+  ? "http://localhost:3001/api"  // 🖥 LOCAL DEV
+  : import.meta.env.VITE_API_URL || "https://REPLACE_ME.ngrok-free.app/api";  // 📱 PHONE TEST / PRODUCTION
+
+export default API_BASE_URL;
+
 
 // Types matching your backend
 interface BackendLocation {
