@@ -1,0 +1,212 @@
+[
+  {
+    "id": "goldstein-health-center",
+    "name": "Ann and Alfred Goldstein Health, Fitness and Recreation Center",
+    "type": "building",
+    "coordinates": {
+      "lat": 41.1293558,
+      "lng": -73.8093772
+    },
+    "description": "Health, fitness and recreation center"
+  },
+  {
+    "id": "welcome-center",
+    "name": "Welcome Center",
+    "type": "entrance",
+    "coordinates": {
+      "lat": 41.126231,
+      "lng": -73.8076645
+    },
+    "description": "Main campus welcome center"
+  },
+  {
+    "id": "willcox-hall",
+    "name": "Willcox Hall",
+    "type": "building",
+    "coordinates": {
+      "lat": 41.126231,
+      "lng": -73.8076645
+    },
+    "description": "Academic building"
+  },
+  {
+    "id": "goldstein-academic-center",
+    "name": "Goldstein Academic Center",
+    "type": "building",
+    "coordinates": {
+      "lat": 41.1265495,
+      "lng": -73.8076576
+    },
+    "description": "Main academic center"
+  },
+  {
+    "id": "north-hall",
+    "name": "North Hall",
+    "type": "building",
+    "coordinates": {
+      "lat": 41.1270351,
+      "lng": -73.8073665
+    },
+    "description": "Residential and academic hall"
+  },
+  {
+    "id": "miller-hall",
+    "name": "Miller Hall",
+    "type": "building",
+    "coordinates": {
+      "lat": 41.1271709,
+      "lng": -73.8086627
+    },
+    "description": "Academic hall"
+  },
+  {
+    "id": "lienhard-hall",
+    "name": "Lienhard Hall",
+    "type": "building",
+    "coordinates": {
+      "lat": 41.1271709,
+      "lng": -73.8086627
+    },
+    "description": "Academic hall"
+  },
+  {
+    "id": "library",
+    "name": "Library",
+    "type": "building",
+    "coordinates": {
+      "lat": 41.1276482,
+      "lng": -73.808836
+    },
+    "description": "Main campus library"
+  },
+  {
+    "id": "kessel-student-center",
+    "name": "Kessel Student Center",
+    "type": "building",
+    "coordinates": {
+      "lat": 41.1278519,
+      "lng": -73.8089191
+    },
+    "description": "Student activities and dining center"
+  },
+  {
+    "id": "choate-house",
+    "name": "Choate House",
+    "type": "building",
+    "coordinates": {
+      "lat": 41.1292563,
+      "lng": -73.8095707
+    },
+    "description": "Campus building"
+  },
+  {
+    "id": "elm-hall",
+    "name": "Elm Hall",
+    "type": "building",
+    "coordinates": {
+      "lat": 41.1290584,
+      "lng": -73.8083777
+    },
+    "description": "Residential hall"
+  },
+  {
+    "id": "martin-hall",
+    "name": "Martin Hall",
+    "type": "building",
+    "coordinates": {
+      "lat": 41.1291606,
+      "lng": -73.8080692
+    },
+    "description": "Residential hall"
+  },
+  {
+    "id": "alumni-hall",
+    "name": "Alumni Hall",
+    "type": "building",
+    "coordinates": {
+      "lat": 41.1293248,
+      "lng": -73.8084271
+    },
+    "description": "Alumni center"
+  },
+  {
+    "id": "university-health-care",
+    "name": "University Health Care",
+    "type": "building",
+    "coordinates": {
+      "lat": 41.1293248,
+      "lng": -73.8084271
+    },
+    "description": "Campus health services"
+  },
+  {
+    "id": "pace-pool",
+    "name": "Pace Pool",
+    "type": "landmark",
+    "coordinates": {
+      "lat": 41.1293558,
+      "lng": -73.8093772
+    },
+    "description": "Swimming pool facility"
+  },
+  {
+    "id": "undergraduate-admission",
+    "name": "Office of Undergraduate Admission",
+    "type": "building",
+    "coordinates": {
+      "lat": 41.1303482,
+      "lng": -73.8099331
+    },
+    "description": "Admissions office"
+  },
+  {
+    "id": "finnerty-field",
+    "name": "Peter X. Finnerty Field",
+    "type": "landmark",
+    "coordinates": {
+      "lat": 41.1292164,
+      "lng": -73.8115401
+    },
+    "description": "Athletic field"
+  },
+  {
+    "id": "pace-stadium",
+    "name": "Pace Stadium",
+    "type": "landmark",
+    "coordinates": {
+      "lat": 41.1292164,
+      "lng": -73.8115401
+    },
+    "description": "Main stadium"
+  },
+  {
+    "id": "softball-field",
+    "name": "Pace Softball Field",
+    "type": "landmark",
+    "coordinates": {
+      "lat": 41.1259319,
+      "lng": -73.8091405
+    },
+    "description": "Softball field"
+  },
+  {
+    "id": "school-of-education",
+    "name": "School of Education",
+    "type": "building",
+    "coordinates": {
+      "lat": 41.1266574,
+      "lng": -73.8067458
+    },
+    "description": "Education department building"
+  },
+  {
+    "id": "townhouses",
+    "name": "Townhouses",
+    "type": "building",
+    "coordinates": {
+      "lat": 41.1317346,
+      "lng": -73.8090174
+    },
+    "description": "Student housing townhouses"
+  }
+]
