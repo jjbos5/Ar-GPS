@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Search, MapPin } from 'lucide-react';
-import { mockDestinations } from '../data/mockData';
 import type { Destination } from '../types';
+import { fetchLocations, convertToDestination } from '../backendApi';
 
 const categories = [
   { value: 'all', label: 'All' },
