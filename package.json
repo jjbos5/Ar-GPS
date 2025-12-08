@@ -7,10 +7,11 @@
     "dev:backend": "cd backend && npm run dev",
     "ngrok:frontend": "ngrok http 5173 --log=stdout --log-format=logfmt",
     "ngrok:backend": "ngrok http 3001 --log=stdout --log-format=logfmt",
-    "mobile-all": "concurrently -k \"npm:dev:frontend\" \"npm:dev:backend\" \"npm:ngrok:frontend\" \"npm:ngrok:backend\"",    
+    "mobile-all": "concurrently -k \"npm:dev:frontend\" \"npm:dev:backend\" \"npm:ngrok:frontend\" \"npm:ngrok:backend\"",
     "install:all": "cd frontend && npm install && cd ../backend && npm install"
   },
   "devDependencies": {
+    "@vercel/node": "^5.5.15",
     "concurrently": "^8.2.2"
   }
 }

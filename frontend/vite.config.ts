@@ -1,13 +1,14 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
-import basicSsl from '@vitejs/plugin-basic-ssl';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
-    basicSsl(),
+
+    // DO NOT include basicSsl() — Vercel handles HTTPS automatically
+
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'models/**/*'],
@@ -20,20 +21,11 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'portrait',
         icons: [
-          {
-            src: 'icon-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'icon-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
+          { src: 'icon-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icon-512x512.png', sizes: '512x512', type: 'image/png' }
         ]
       },
       workbox: {
-        // Cache map tiles and 3D models for offline use
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/.*\.tile\.openstreetmap\.org\/.*/i,
@@ -42,7 +34,7 @@ export default defineConfig({
               cacheName: 'osm-tiles',
               expiration: {
                 maxEntries: 200,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+                maxAgeSeconds: 60 * 60 * 24 * 30
               }
             }
           },
@@ -53,7 +45,7 @@ export default defineConfig({
               cacheName: '3d-models',
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 90 // 90 days
+                maxAgeSeconds: 60 * 60 * 24 * 90
               }
             }
           }
@@ -61,7 +53,7 @@ export default defineConfig({
       }
     })
   ],
-  // Make imports cleaner with aliases
+
   resolve: {
     alias: {
       '@': '/src',
@@ -73,9 +65,14 @@ export default defineConfig({
       '@types': '/src/types'
     }
   },
-  // Required for AR and GPS features
+
   server: {
-    host: true,
+    host: true, // allows LAN access from phones
     port: 5173
+  },
+
+  preview: {
+    host: true,
+    port: 4173
   }
 });
