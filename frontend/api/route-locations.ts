@@ -1,6 +1,7 @@
+// POST /api/route/locations
 import { campusLocations, findRoute } from './campusData';
 
-export default function handler(req: any, res: any){
+export default function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
@@ -24,7 +25,7 @@ export default function handler(req: any, res: any){
     endLocation.coordinates.lng
   );
 
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     data: {
       ...route,

@@ -1,3 +1,4 @@
+// POST /api/nearby
 import { campusLocations, calculateDistance } from './campusData';
 
 export default function handler(req: any, res: any) {
@@ -22,7 +23,7 @@ export default function handler(req: any, res: any) {
     .filter(loc => loc.distance <= radius)
     .sort((a, b) => a.distance - b.distance);
 
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     data: nearby
   });

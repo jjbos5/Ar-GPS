@@ -1,3 +1,4 @@
+// POST /api/route
 import { findRoute } from './campusData';
 
 export default function handler(req: any, res: any) {
@@ -16,7 +17,7 @@ export default function handler(req: any, res: any) {
 
   const route = findRoute(start.lat, start.lng, end.lat, end.lng);
 
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     data: route
   });

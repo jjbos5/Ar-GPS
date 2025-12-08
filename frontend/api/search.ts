@@ -1,4 +1,4 @@
-import { campusLocations } from './campusData';
+import { campusLocations } from '../campusData';
 
 export default function handler(req: any, res: any) {
   if (req.method !== 'GET') {
@@ -22,7 +22,7 @@ export default function handler(req: any, res: any) {
     );
   }
 
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     data: results
   });
