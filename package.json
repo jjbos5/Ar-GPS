@@ -1,0 +1,16 @@
+{
+  "name": "campus-navigator",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "ngrok:frontend": "ngrok http 5173 --log=stdout --log-format=logfmt",
+    "ngrok:backend": "ngrok http 3001 --log=stdout --log-format=logfmt",
+    "mobile-all": "concurrently -k \"npm:dev:frontend\" \"npm:dev:backend\" \"npm:ngrok:frontend\" \"npm:ngrok:backend\"",    
+    "install:all": "cd frontend && npm install && cd ../backend && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

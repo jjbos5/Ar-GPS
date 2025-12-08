@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for the app */
+@layer base {
+  html {
+    @apply h-full;
+  }
+  
+  body {
+    @apply h-full font-sans antialiased;
+  }
+  
+  #root {
+    @apply h-full;
+  }
+}
+
+/* Custom utility classes */
+@layer utilities {
+  .no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  .compass-rotate {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .glass {
+    @apply bg-white/10 backdrop-blur-lg border border-white/20;
+  }
+}
