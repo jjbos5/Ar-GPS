@@ -66,11 +66,21 @@ export default function DestinationsPage() {
   });
 
   const handleSelectDestination = (dest: Destination) => {
-    localStorage.setItem('selectedDestination', JSON.stringify(dest));
-    // Clear any old route to avoid stale data
-    localStorage.removeItem('activeRoute');
-    navigate('/map');
-  };
+  localStorage.setItem('selectedDestination', JSON.stringify(dest));
+  localStorage.removeItem('activeRoute'); // clear old route
+
+  // NEW: Immediately prepare AR coords (lat/lon)
+  localStorage.setItem(
+    'arDestination',
+    JSON.stringify({
+      lat: dest.latitude,
+      lon: dest.longitude
+    })
+  );
+
+  navigate('/map'); // Keep your normal flow
+};
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
