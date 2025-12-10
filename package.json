@@ -13,5 +13,8 @@
   "devDependencies": {
     "@vercel/node": "^5.5.15",
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "three": "^0.181.2"
   }
 }
