@@ -33,8 +33,8 @@ const CameraOverlayArrow: React.FC<Props> = ({ destination }) => {
     distance == null
       ? "…"
       : distance < 1000
-      ? `${distance.toFixed(0)} m`
-      : `${(distance / 1000).toFixed(2)} km`;
+        ? `${distance.toFixed(0)} m`
+        : `${(distance / 1000).toFixed(2)} km`;
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-black">
@@ -50,7 +50,7 @@ const CameraOverlayArrow: React.FC<Props> = ({ destination }) => {
         <div
           className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-md"
           style={{
-            transform: `rotate(${arrowAngle ?? 0}deg)`,
+            transform: `rotate(${(arrowAngle ?? 0) - 90}deg)`,
             transition: "transform 0.2s linear",
           }}
         >

@@ -1,88 +1,120 @@
 // frontend/src/pages/MapPage.tsx
 
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Navigation as NavigationIcon, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  Navigation as NavigationIcon,
+  AlertCircle,
+} from "lucide-react";
 
-import { calculateRoute } from '../backendApi';
-import type { BackendRoute } from '../backendApi';
-import type { Destination } from '../types';
+import {
+  GoogleMap,
+  Marker,
+  Polyline,
+  useJsApiLoader,
+} from "@react-google-maps/api";
+
+import { calculateRoute } from "../backendApi";
+import type { BackendRoute } from "../backendApi";
+import type { Destination } from "../types";
 
 export default function MapPage() {
   const navigate = useNavigate();
+
   const [destination, setDestination] = useState<Destination | null>(null);
-
   const [route, setRoute] = useState<BackendRoute | null>(null);
-  const [isRouteLoading, setIsRouteLoading] = useState(false);
-  const [routeError, setRouteError] = useState<string>('');
 
+  const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(
+    null
+  );
+
+  const [isRouteLoading, setIsRouteLoading] = useState(false);
+  const [routeError, setRouteError] = useState<string>("");
+
+  // Load Google Maps API
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_KEY,
+    libraries: ["places"],
+  });
+
+  // Load selected destination
   useEffect(() => {
-    const stored = localStorage.getItem('selectedDestination');
+    const stored = localStorage.getItem("selectedDestination");
+
     if (stored) {
       const dest: Destination = JSON.parse(stored);
       setDestination(dest);
-      // As soon as we know the destination, try to build a route
       fetchRouteForDestination(dest);
     } else {
-      navigate('/destinations');
+      navigate("/destinations");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
+  // Route fetcher
   const fetchRouteForDestination = (dest: Destination) => {
     if (!navigator.geolocation) {
-      setRouteError('Geolocation is not supported in this browser.');
+      setRouteError("Geolocation is not supported.");
       return;
     }
 
     setIsRouteLoading(true);
-    setRouteError('');
+    setRouteError("");
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        try {
-          const startLat = position.coords.latitude;
-          const startLng = position.coords.longitude;
+        const startLat = position.coords.latitude;
+        const startLng = position.coords.longitude;
 
+        setUserPos({ lat: startLat, lng: startLng });
+
+        try {
           const endLat = dest.latitude;
           const endLng = dest.longitude;
 
           const r = await calculateRoute(startLat, startLng, endLat, endLng);
-          setRoute(r);
-          localStorage.setItem('activeRoute', JSON.stringify(r));
+
+          // Convert backend route → Google-friendly polyline
+          const polyline =
+            r.waypoints?.map((wp) => ({
+              lat: wp.lat,
+              lng: wp.lng, // FIXED — NOT wp.lon
+            })) || [];
+
+          // Create a route object that includes polyline, overriding TS strict checking
+          const withPolyline = {
+            ...(r as BackendRoute),
+            polyline,
+          } as BackendRoute;
+
+          setRoute(withPolyline);
+          localStorage.setItem("activeRoute", JSON.stringify(withPolyline));
+
         } catch (error) {
-          console.error('Failed to calculate route:', error);
-          setRouteError('Could not calculate a walking route.');
+          console.error(error);
+          setRouteError("Could not calculate a walking route.");
         } finally {
           setIsRouteLoading(false);
         }
       },
       (err) => {
-        console.error('Geolocation error:', err);
-        setRouteError(
-          'Location permission denied. Please allow location access to see distance & ETA.'
-        );
+        console.error(err);
+        setRouteError("Location permission denied.");
         setIsRouteLoading(false);
       },
       {
         enableHighAccuracy: true,
         timeout: 8000,
-        maximumAge: 0
       }
     );
   };
 
   const handleStartAR = async () => {
     try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        alert('Camera not available on this device. Please use a mobile device.');
-        return;
-      }
-
       await navigator.mediaDevices.getUserMedia({ video: true });
-      navigate('/ar');
-    } catch (error) {
-      alert('Camera access denied or not available');
+      navigate("/ar");
+    } catch {
+      alert("Camera access denied or unavailable.");
     }
   };
 
@@ -104,7 +136,7 @@ export default function MapPage() {
       <div className="bg-white shadow-sm p-4">
         <div className="flex items-center gap-3 mb-2">
           <button
-            onClick={() => navigate('/destinations')}
+            onClick={() => navigate("/destinations")}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
             <ArrowLeft className="w-6 h-6 text-[#002855]" />
@@ -114,12 +146,14 @@ export default function MapPage() {
             <p className="text-sm text-gray-600 truncate">{destination.name}</p>
           </div>
         </div>
+
         {isRouteLoading && (
           <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
             <div className="w-3 h-3 border-2 border-[#002855] border-t-transparent rounded-full animate-spin" />
             <span>Calculating walking route...</span>
           </div>
         )}
+
         {!isRouteLoading && routeError && (
           <div className="mt-2 flex items-center gap-2 text-xs text-red-600">
             <AlertCircle className="w-4 h-4" />
@@ -128,9 +162,64 @@ export default function MapPage() {
         )}
       </div>
 
-      {/* Map Placeholder with T-Bone */}
-      <div className="flex-1 bg-gradient-to-b from-blue-50 to-blue-100 relative overflow-hidden">
-        {/* T-Bone Waving */}
+      {/* GOOGLE MAP SECTION */}
+      <div className="flex-1 relative">
+        {isLoaded ? (
+          <GoogleMap
+            mapContainerStyle={{ width: "100%", height: "100%" }}
+            center={{
+              lat: destination.latitude,
+              lng: destination.longitude,
+            }}
+            zoom={16}
+            options={{
+              disableDefaultUI: true,
+              gestureHandling: "greedy",
+            }}
+          >
+            {/* USER POSITION */}
+            {userPos && (
+              <Marker
+                position={userPos}
+                icon={{
+                  url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+                }}
+              />
+            )}
+
+            {/* DESTINATION */}
+            <Marker
+              position={{
+                lat: destination.latitude,
+                lng: destination.longitude,
+              }}
+              icon={{
+                url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+              }}
+            />
+
+            {/* ROUTE POLYLINE */}
+            {route?.polyline && (
+              <Polyline
+                path={route.polyline}
+                options={{
+                  strokeColor: "#002855",
+                  strokeOpacity: 0.9,
+                  strokeWeight: 5,
+                }}
+              />
+            )}
+          </GoogleMap>
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-10 h-10 border-4 border-[#002855] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-gray-600">Loading map…</p>
+            </div>
+          </div>
+        )}
+
+        {/* T-BONE OVERLAY */}
         <div className="absolute left-6 bottom-20 z-10">
           <img
             src="/popup_tbone.png"
@@ -138,27 +227,14 @@ export default function MapPage() {
             className="w-32 h-32 object-contain drop-shadow-2xl"
           />
         </div>
-
-        {/* Map Placeholder */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center p-6 bg-white/80 backdrop-blur rounded-2xl shadow-lg max-w-xs">
-            <div className="text-6xl mb-4">🗺️</div>
-            <p className="text-gray-700 font-semibold mb-2">
-              Interactive Map Coming Soon!
-            </p>
-            <p className="text-sm text-gray-500">
-              For now, T-Bone will guide you in AR with step-by-step directions.
-            </p>
-          </div>
-        </div>
       </div>
 
-      {/* Bottom Panel */}
+      {/* BOTTOM PANEL */}
       <div className="bg-white shadow-2xl rounded-t-3xl p-6">
         <div className="flex items-center gap-4 mb-6">
           <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-200 flex-shrink-0">
             <img
-              src={destination.imageUrl || 'https://via.placeholder.com/64'}
+              src={destination.imageUrl || "https://via.placeholder.com/64"}
               alt={destination.name}
               className="w-full h-full object-cover"
             />
@@ -169,7 +245,7 @@ export default function MapPage() {
             </h2>
             <p className="text-sm text-gray-600">
               {destination.description ||
-                'Follow T-Bone to reach this location using AR guidance.'}
+                "Follow T-Bone and the AR guidance to reach your destination."}
             </p>
           </div>
         </div>
@@ -178,9 +254,7 @@ export default function MapPage() {
         <div className="grid grid-cols-3 gap-4 mb-6 text-center">
           <div>
             <div className="text-2xl font-bold text-[#002855]">
-              {distanceMeters
-                ? `${Math.round(distanceMeters)}m`
-                : '—'}
+              {distanceMeters ? `${Math.round(distanceMeters)}m` : "—"}
             </div>
             <div className="text-xs text-gray-500 uppercase">Distance</div>
             {distanceMiles && (
@@ -191,7 +265,7 @@ export default function MapPage() {
           </div>
           <div>
             <div className="text-2xl font-bold text-[#002855]">
-              {etaMinutes ?? '—'}
+              {etaMinutes ?? "—"}
             </div>
             <div className="text-xs text-gray-500 uppercase">Minutes</div>
           </div>
@@ -201,7 +275,7 @@ export default function MapPage() {
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* Buttons */}
         <button
           onClick={handleStartAR}
           className="w-full bg-[#002855] text-white rounded-2xl px-8 py-4 font-bold text-lg shadow-lg hover:shadow-xl transition-all mb-3 flex items-center justify-center gap-3"
@@ -211,7 +285,7 @@ export default function MapPage() {
         </button>
 
         <button
-          onClick={() => navigate('/destinations')}
+          onClick={() => navigate("/destinations")}
           className="w-full bg-gray-100 text-gray-700 rounded-xl px-6 py-3 font-semibold hover:bg-gray-200 transition-all"
         >
           Choose Different Destination

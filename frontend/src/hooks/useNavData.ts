@@ -73,7 +73,7 @@ export function useNavData(destination: LatLon): NavData {
 
     if (heading != null) {
       // how much to rotate arrow: "where dest is" - "where phone is pointed"
-      arrowAngle = (bearingToDest - heading + 360) % 360;
+      arrowAngle = (bearingToDest - heading + 180 + 360) % 360;
     }
   }
 
