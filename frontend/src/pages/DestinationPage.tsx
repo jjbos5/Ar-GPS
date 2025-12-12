@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, MapPin, Filter } from 'lucide-react';
 
-import { fetchLocations, convertToDestination } from '../backendApi';
+import { fetchLocations, convertToDestination } from '../services/backendApi';
 import type { Destination } from '../types';
 
 const CATEGORIES: {

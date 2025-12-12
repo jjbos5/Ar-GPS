@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
 
 import type { Destination } from "../types";
-import type { BackendRoute } from "../backendApi";
+import type { BackendRoute } from "../services/backendApi";
 
 import WebXRArrow from "../components/webXRArrow";
 import CameraOverlayArrow from "../components/CameraOverlayArrow";

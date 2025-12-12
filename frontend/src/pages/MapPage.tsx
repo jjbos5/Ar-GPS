@@ -1,6 +1,6 @@
 // frontend/src/pages/MapPage.tsx
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -15,9 +15,22 @@ import {
   useJsApiLoader,
 } from "@react-google-maps/api";
 
-import { calculateRoute } from "../backendApi";
-import type { BackendRoute } from "../backendApi";
+// Define correct library type
+type GoogleMapLibrary =
+  | "places"
+  | "geometry"
+  | "drawing"
+  | "visualization";
+
+import { calculateRoute } from "../services/backendApi";
+import type { BackendRoute } from "../services/backendApi";
 import type { Destination } from "../types";
+
+// Prevent LoadScript reload warnings
+const GOOGLE_MAP_LIBRARIES: GoogleMapLibrary[] = ["places"];
+// Secure marker URLs
+const BLUE_DOT = "https://maps.google.com/mapfiles/ms/icons/blue-dot.png";
+const RED_DOT = "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
 
 export default function MapPage() {
   const navigate = useNavigate();
@@ -35,79 +48,81 @@ export default function MapPage() {
   // Load Google Maps API
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_KEY,
-    libraries: ["places"],
+    libraries: GOOGLE_MAP_LIBRARIES,
   });
 
-  // Load selected destination
+  // Load destination from localStorage
   useEffect(() => {
     const stored = localStorage.getItem("selectedDestination");
 
-    if (stored) {
-      const dest: Destination = JSON.parse(stored);
-      setDestination(dest);
-      fetchRouteForDestination(dest);
-    } else {
+    if (!stored) {
       navigate("/destinations");
-    }
-  }, [navigate]);
-
-  // Route fetcher
-  const fetchRouteForDestination = (dest: Destination) => {
-    if (!navigator.geolocation) {
-      setRouteError("Geolocation is not supported.");
       return;
     }
 
-    setIsRouteLoading(true);
-    setRouteError("");
+    const dest: Destination = JSON.parse(stored);
+    setDestination(dest);
+    fetchRouteForDestination(dest);
+  }, [navigate]);
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const startLat = position.coords.latitude;
-        const startLng = position.coords.longitude;
-
-        setUserPos({ lat: startLat, lng: startLng });
-
-        try {
-          const endLat = dest.latitude;
-          const endLng = dest.longitude;
-
-          const r = await calculateRoute(startLat, startLng, endLat, endLng);
-
-          // Convert backend route → Google-friendly polyline
-          const polyline =
-            r.waypoints?.map((wp) => ({
-              lat: wp.lat,
-              lng: wp.lng, // FIXED — NOT wp.lon
-            })) || [];
-
-          // Create a route object that includes polyline, overriding TS strict checking
-          const withPolyline = {
-            ...(r as BackendRoute),
-            polyline,
-          } as BackendRoute;
-
-          setRoute(withPolyline);
-          localStorage.setItem("activeRoute", JSON.stringify(withPolyline));
-
-        } catch (error) {
-          console.error(error);
-          setRouteError("Could not calculate a walking route.");
-        } finally {
-          setIsRouteLoading(false);
-        }
-      },
-      (err) => {
-        console.error(err);
-        setRouteError("Location permission denied.");
-        setIsRouteLoading(false);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 8000,
+  // Fetch route using backend
+  const fetchRouteForDestination = useCallback(
+    (dest: Destination) => {
+      if (!navigator.geolocation) {
+        setRouteError("Geolocation is not supported.");
+        return;
       }
-    );
-  };
+
+      setIsRouteLoading(true);
+      setRouteError("");
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const startLat = position.coords.latitude;
+          const startLng = position.coords.longitude;
+
+          setUserPos({ lat: startLat, lng: startLng });
+
+          try {
+            const endLat = dest.latitude;
+            const endLng = dest.longitude;
+
+            const r = await calculateRoute(startLat, startLng, endLat, endLng);
+
+            // Convert backend waypoints to Google Maps polyline
+            const polyline =
+              r.waypoints?.map((wp) => ({
+                lat: wp.lat,
+                lng: wp.lng,
+              })) || [];
+
+            const withPolyline = {
+              ...r,
+              polyline,
+            } as BackendRoute;
+
+            setRoute(withPolyline);
+            localStorage.setItem("activeRoute", JSON.stringify(withPolyline));
+          } catch (err) {
+            console.error("Route error:", err);
+            setRouteError("Could not calculate a walking route.");
+          } finally {
+            setIsRouteLoading(false);
+          }
+        },
+        (err) => {
+          console.error("Geolocation error:", err);
+          setRouteError("Location permission denied.");
+          setIsRouteLoading(false);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 8000,
+        }
+      );
+    },
+    []
+  );
 
   const handleStartAR = async () => {
     try {
@@ -121,7 +136,7 @@ export default function MapPage() {
   if (!destination) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-[#002855] border-t-transparent rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-blue-800 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -132,7 +147,7 @@ export default function MapPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
+      {/* HEADER */}
       <div className="bg-white shadow-sm p-4">
         <div className="flex items-center gap-3 mb-2">
           <button
@@ -143,13 +158,15 @@ export default function MapPage() {
           </button>
           <div className="flex-1">
             <h1 className="text-xl font-bold text-[#002855]">Route to</h1>
-            <p className="text-sm text-gray-600 truncate">{destination.name}</p>
+            <p className="text-sm text-gray-600 truncate">
+              {destination.name}
+            </p>
           </div>
         </div>
 
         {isRouteLoading && (
           <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-            <div className="w-3 h-3 border-2 border-[#002855] border-t-transparent rounded-full animate-spin" />
+            <div className="w-3 h-3 border-2 border-blue-800 border-t-transparent rounded-full animate-spin" />
             <span>Calculating walking route...</span>
           </div>
         )}
@@ -162,7 +179,7 @@ export default function MapPage() {
         )}
       </div>
 
-      {/* GOOGLE MAP SECTION */}
+      {/* GOOGLE MAP */}
       <div className="flex-1 relative">
         {isLoaded ? (
           <GoogleMap
@@ -181,9 +198,7 @@ export default function MapPage() {
             {userPos && (
               <Marker
                 position={userPos}
-                icon={{
-                  url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-                }}
+                icon={{ url: BLUE_DOT }}
               />
             )}
 
@@ -193,9 +208,7 @@ export default function MapPage() {
                 lat: destination.latitude,
                 lng: destination.longitude,
               }}
-              icon={{
-                url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-              }}
+              icon={{ url: RED_DOT }}
             />
 
             {/* ROUTE POLYLINE */}
@@ -213,7 +226,7 @@ export default function MapPage() {
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <div className="w-10 h-10 border-4 border-[#002855] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <div className="w-10 h-10 border-4 border-blue-800 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
               <p className="text-gray-600">Loading map…</p>
             </div>
           </div>
@@ -223,7 +236,7 @@ export default function MapPage() {
         <div className="absolute left-6 bottom-20 z-10">
           <img
             src="/popup_tbone.png"
-            alt="popup_tbone"
+            alt="popup"
             className="w-32 h-32 object-contain drop-shadow-2xl"
           />
         </div>
@@ -239,6 +252,7 @@ export default function MapPage() {
               className="w-full h-full object-cover"
             />
           </div>
+
           <div className="flex-1">
             <h2 className="font-bold text-lg text-[#002855]">
               {destination.name}
@@ -263,19 +277,20 @@ export default function MapPage() {
               </div>
             )}
           </div>
+
           <div>
             <div className="text-2xl font-bold text-[#002855]">
               {etaMinutes ?? "—"}
             </div>
             <div className="text-xs text-gray-500 uppercase">Minutes</div>
           </div>
+
           <div>
             <div className="text-2xl">🚶</div>
             <div className="text-xs text-gray-500 uppercase">Walking</div>
           </div>
         </div>
 
-        {/* Buttons */}
         <button
           onClick={handleStartAR}
           className="w-full bg-[#002855] text-white rounded-2xl px-8 py-4 font-bold text-lg shadow-lg hover:shadow-xl transition-all mb-3 flex items-center justify-center gap-3"
