@@ -1,5 +1,5 @@
 // frontend/src/pages/MapPage.tsx
-
+/* 
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -147,7 +147,7 @@ export default function MapPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* HEADER */}
+      {/* HEADER }
       <div className="bg-white shadow-sm p-4">
         <div className="flex items-center gap-3 mb-2">
           <button
@@ -179,7 +179,7 @@ export default function MapPage() {
         )}
       </div>
 
-      {/* GOOGLE MAP */}
+      {/* GOOGLE MAP *}
       <div className="flex-1 relative">
         {isLoaded ? (
           <GoogleMap
@@ -194,7 +194,7 @@ export default function MapPage() {
               gestureHandling: "greedy",
             }}
           >
-            {/* USER POSITION */}
+            {/* USER POSITION *}
             {userPos && (
               <Marker
                 position={userPos}
@@ -202,7 +202,7 @@ export default function MapPage() {
               />
             )}
 
-            {/* DESTINATION */}
+            {/* DESTINATION *}
             <Marker
               position={{
                 lat: destination.latitude,
@@ -211,7 +211,7 @@ export default function MapPage() {
               icon={{ url: RED_DOT }}
             />
 
-            {/* ROUTE POLYLINE */}
+            {/* ROUTE POLYLINE *}
             {route?.polyline && (
               <Polyline
                 path={route.polyline}
@@ -232,7 +232,7 @@ export default function MapPage() {
           </div>
         )}
 
-        {/* T-BONE OVERLAY */}
+        {/* T-BONE OVERLAY *}
         <div className="absolute left-6 bottom-20 z-10">
           <img
             src="/popup_tbone.png"
@@ -242,7 +242,7 @@ export default function MapPage() {
         </div>
       </div>
 
-      {/* BOTTOM PANEL */}
+      {/* BOTTOM PANEL *}
       <div className="bg-white shadow-2xl rounded-t-3xl p-6">
         <div className="flex items-center gap-4 mb-6">
           <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-200 flex-shrink-0">
@@ -264,7 +264,7 @@ export default function MapPage() {
           </div>
         </div>
 
-        {/* Stats */}
+        {/* Stats *}
         <div className="grid grid-cols-3 gap-4 mb-6 text-center">
           <div>
             <div className="text-2xl font-bold text-[#002855]">
@@ -306,6 +306,50 @@ export default function MapPage() {
           Choose Different Destination
         </button>
       </div>
+    </div>
+  );
+} 
+ */
+import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
+
+const containerStyle = {
+  width: "100%",
+  height: "100%",
+};
+
+const center = {
+  lat: 40.7109, // Pace NYC
+  lng: -74.0059,
+};
+
+// IMPORTANT: no types, no imports, no hooks
+const LIBRARIES = ["places"] as const;
+
+export default function MapPage() {
+  const { isLoaded, loadError } = useJsApiLoader({
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_KEY,
+    libraries: LIBRARIES,
+  });
+
+  if (loadError) {
+    return (
+      <div style={{ padding: 20, color: "red" }}>
+        Google Maps failed to load
+      </div>
+    );
+  }
+
+  if (!isLoaded) {
+    return <div style={{ padding: 20 }}>Loading map…</div>;
+  }
+
+  return (
+    <div style={{ width: "100vw", height: "100vh" }}>
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={center}
+        zoom={16}
+      />
     </div>
   );
 }
