@@ -1,7 +1,27 @@
 {
+  "version": 2,
+  "builds": [
+    {
+      "src": "frontend/vite.config.ts",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
   "functions": {
-    "api/**/*.{ts,js}": {
+    "frontend/api/**/*.{ts,js}": {
       "runtime": "nodejs18.x"
     }
-  }
+  },
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/frontend/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/$1"
+    }
+  ]
 }
