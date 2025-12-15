@@ -1,62 +1,65 @@
-// frontend/src/pages/DestinationsPage.tsx
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Search, MapPin, Filter } from "lucide-react";
 
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Search, MapPin, Filter } from 'lucide-react';
+import { fetchLocations, convertToDestination } from "../services/backendApi";
+import type { Destination, DestinationCategory } from "../types/destination";
 
-import { fetchLocations, convertToDestination } from '../services/backendApi';
-import type { Destination } from '../types';
+/* -------------------- CONSTANTS -------------------- */
 
-const CATEGORIES: {
-  id: 'all' | 'academic' | 'dining' | 'residential' | 'athletic' | 'library' | 'parking' | 'health' | 'recreation' | 'other';
-  label: string;
-}[] = [
-  { id: 'all',         label: 'All' },
-  { id: 'academic',    label: 'Academic' },
-  { id: 'residential', label: 'Housing' },
-  { id: 'athletic',    label: 'Athletics' },
-  { id: 'library',     label: 'Library' },
-  { id: 'health',      label: 'Health' },
-  { id: 'parking',     label: 'Parking' },
-  { id: 'recreation',  label: 'Recreation' },
-  { id: 'other',       label: 'Other' },
+const CATEGORIES: { id: DestinationCategory | "all"; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "academic", label: "Academic" },
+  { id: "residential", label: "Housing" },
+  { id: "athletic", label: "Athletics" },
+  { id: "library", label: "Library" },
+  { id: "health", label: "Health" },
+  { id: "parking", label: "Parking" },
+  { id: "recreation", label: "Recreation" },
+  { id: "other", label: "Other" },
 ];
+
+/* ==================== COMPONENT ==================== */
 
 export default function DestinationsPage() {
   const navigate = useNavigate();
 
   const [destinations, setDestinations] = useState<Destination[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] =
-    useState<Destination['category'] | 'all'>('all');
+    useState<DestinationCategory | "all">("all");
 
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState("");
 
-  // Load real data from backend
-  const loadDestinations = async () => {
-    try {
-      setIsLoading(true);
-      setError('');
-      const backendLocations = await fetchLocations();
-      const clientFormatted = backendLocations.map(convertToDestination);
-      setDestinations(clientFormatted);
-    } catch (err) {
-      console.error('Failed to load destinations:', err);
-      setError('Could not load campus locations. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  /* ---------------- LOAD DATA ---------------- */
 
   useEffect(() => {
+    const loadDestinations = async () => {
+      try {
+        setIsLoading(true);
+        setError("");
+
+        const backendLocations = await fetchLocations();
+        const formatted = backendLocations.map(convertToDestination);
+
+        setDestinations(formatted);
+      } catch (err) {
+        console.error(err);
+        setError("Could not load campus locations.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     loadDestinations();
   }, []);
 
-  // Filtered results
+  /* ---------------- FILTER LOGIC ---------------- */
+
   const filteredDestinations = destinations.filter((dest) => {
     const matchesCategory =
-      selectedCategory === 'all' || dest.category === selectedCategory;
+      selectedCategory === "all" || dest.category === selectedCategory;
 
     const matchesSearch =
       dest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -65,34 +68,53 @@ export default function DestinationsPage() {
     return matchesCategory && matchesSearch;
   });
 
+  /* ---------------- HANDLERS ---------------- */
+
   const handleSelectDestination = (dest: Destination) => {
-  localStorage.setItem('selectedDestination', JSON.stringify(dest));
-  localStorage.removeItem('activeRoute'); // clear old route
+    localStorage.setItem("selectedDestination", JSON.stringify(dest));
+    localStorage.removeItem("activeRoute");
 
-  // NEW: Immediately prepare AR coords (lat/lon)
-  localStorage.setItem(
-    'arDestination',
-    JSON.stringify({
-      lat: dest.latitude,
-      lon: dest.longitude
-    })
-  );
+    localStorage.setItem(
+      "arDestination",
+      JSON.stringify({
+        lat: dest.latitude,
+        lon: dest.longitude,
+      })
+    );
 
-  navigate('/map'); // Keep your normal flow
-};
+    navigate("/map");
+  };
 
+  /* ======================= JSX ======================= */
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
-      <header className="bg-white shadow-sm px-4 pt-10 pb-4">
-        <h1 className="text-2xl font-bold text-[#002855]">Choose your destination</h1>
+      {/* HOME BUTTON */}
+      <div className="px-4 pt-4">
+        <button
+          type="button"
+          onClick={() => navigate("/")}
+          className="inline-flex items-center bg-[#002855] px-4 py-2 rounded hover:opacity-90 transition"
+          aria-label="Go to home"
+        >
+          <span className="text-white font-bold text-lg">PACE</span>
+          <span className="text-[#FDB515] font-bold text-xs ml-1">
+            UNIVERSITY
+          </span>
+        </button>
+      </div>
+
+      {/* HEADER */}
+      <header className="bg-white shadow-sm px-4 pt-6 pb-4 mt-4">
+        <h1 className="text-2xl font-bold text-[#002855]">
+          Choose your destination
+        </h1>
         <p className="text-sm text-gray-600 mt-1">
           T-Bone will guide you there in AR
         </p>
       </header>
 
-      {/* Search + Filters */}
+      {/* SEARCH + FILTER */}
       <div className="px-4 pt-4">
         <div className="flex items-center gap-3 mb-3">
           <div className="flex-1 relative">
@@ -102,24 +124,29 @@ export default function DestinationsPage() {
               placeholder="Search buildings, halls, or landmarks..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FFC72C] focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm"
             />
           </div>
-          <button className="p-2.5 rounded-xl border border-gray-200 bg-white text-gray-600">
+
+          <button
+            type="button"
+            className="p-2.5 rounded-xl border border-gray-200 bg-white text-gray-600"
+            aria-label="Filter destinations"
+          >
             <Filter className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Category Pills */}
+        {/* CATEGORY PILLS */}
         <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
           {CATEGORIES.map((cat) => (
             <button
               key={cat.id}
-              onClick={() => setSelectedCategory(cat.id as any)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border ${
+              onClick={() => setSelectedCategory(cat.id)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium border ${
                 selectedCategory === cat.id
-                  ? 'bg-[#002855] text-white border-[#002855]'
-                  : 'bg-white text-gray-700 border-gray-200'
+                  ? "bg-[#002855] text-white border-[#002855]"
+                  : "bg-white text-gray-700 border-gray-200"
               }`}
             >
               {cat.label}
@@ -128,13 +155,15 @@ export default function DestinationsPage() {
         </div>
       </div>
 
-      {/* Content */}
+      {/* CONTENT */}
       <main className="flex-1 px-4 pt-2 pb-4">
         {isLoading && (
           <div className="flex items-center justify-center h-full">
             <div className="flex flex-col items-center gap-3">
               <div className="w-10 h-10 border-4 border-[#002855] border-t-transparent rounded-full animate-spin" />
-              <p className="text-sm text-gray-500">Loading campus locations...</p>
+              <p className="text-sm text-gray-500">
+                Loading campus locations…
+              </p>
             </div>
           </div>
         )}
@@ -161,23 +190,26 @@ export default function DestinationsPage() {
               >
                 <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-200 flex-shrink-0">
                   <img
-                    src={dest.imageUrl || '/campus-placeholder.jpg'}
+                    src={dest.imageUrl || "/campus-placeholder.jpg"}
                     alt={dest.name}
                     className="w-full h-full object-cover"
                   />
                 </div>
+
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <h2 className="font-semibold text-[#002855] truncate">
                       {dest.name}
                     </h2>
-                    <span className="text-[10px] uppercase tracking-wide text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] uppercase text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
                       {dest.category}
                     </span>
                   </div>
+
                   <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                    {dest.description || 'Tap to navigate here with T-Bone.'}
+                    {dest.description || "Tap to navigate here with T-Bone."}
                   </p>
+
                   <div className="flex items-center gap-1 mt-2 text-xs text-gray-500">
                     <MapPin className="w-3 h-3" />
                     <span>On-campus location</span>

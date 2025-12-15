@@ -12,6 +12,9 @@ let API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 // Remove accidental trailing slash ("/api/" → "/api")
 API_BASE_URL = API_BASE_URL.replace(/\/$/, "");
 
+import type { Destination } from "../types";
+import { DESTINATION_IMAGES } from "../data/destinationImages";
+
 
 // ------------------------------------------------------
 //  TYPE DEFINITIONS (MATCHING BACKEND)
@@ -165,40 +168,74 @@ export const getNearbyLocations = async (
 //  CONVERTER → "Destination" shape for your frontend
 // ------------------------------------------------------
 
-export const convertToDestination = (location: BackendLocation) => ({
-  id: location.id,
-  name: location.name,
-  description: location.description || "",
-  category: mapTypeToCategory(location.type),
+export function convertToDestination(
+  location: BackendLocation
+): Destination {
+  return {
+    id: location.id,
+    name: location.name,
+    description: location.description ?? "",
 
-  latitude: location.coordinates.lat,
-  longitude: location.coordinates.lng,
+    latitude: location.coordinates.lat,
+    longitude: location.coordinates.lng,
 
-  imageUrl: undefined,
-  isAccessible: true,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-});
+    category: mapBackendCategory(location.name),
+
+    // ✅ ADD THESE
+    isAccessible: true, // default for now
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+
+    // image handled below
+    imageUrl: DESTINATION_IMAGES[location.name] ?? "/campus-placeholder.jpg",
+  };
+}
+
+
 
 // Map backend types to frontend UI categories
-function mapTypeToCategory(
-  type: string
-):
-  | "academic"
-  | "dining"
-  | "residential"
-  | "athletic"
-  | "library"
-  | "parking"
-  | "health"
-  | "recreation"
-  | "other" {
-  const mapping: Record<string, string> = {
-    building: "academic",
-    landmark: "other",
-    entrance: "other",
-    parking: "parking",
-  };
+function mapBackendCategory(name?: string): Destination["category"] {
+  if (!name) return "other";
 
-  return (mapping[type] as any) || "other";
+  const value = name.toLowerCase();
+
+  if (
+    value.includes("academic") ||
+    value.includes("hall") ||
+    value.includes("school")
+  ) return "academic";
+
+  if (
+    value.includes("north") ||
+    value.includes("elm") ||
+    value.includes("martin") ||
+    value.includes("alumni") ||
+    value.includes("lienhard") ||
+    value.includes("miller") ||
+    value.includes("townhouse")
+  ) return "residential";
+
+  if (
+    value.includes("fitness") ||
+    value.includes("recreation") ||
+    value.includes("stadium") ||
+    value.includes("field") ||
+    value.includes("pool")
+  ) return "athletic";
+
+  if (value.includes("library")) return "library";
+
+  if (
+    value.includes("health") ||
+    value.includes("medical")
+  ) return "health";
+
+  if (value.includes("parking")) return "parking";
+
+  if (value.includes("student center")) return "recreation";
+
+  return "other";
 }
+
+
+

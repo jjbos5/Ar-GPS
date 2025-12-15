@@ -98,8 +98,24 @@ export default function MapPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+
+      {/* ✅ HOME LOGO BUTTON (NEW, SAFE ADDITION) */}
+      <div className="px-4 pt-4">
+        <button
+          type="button"
+          onClick={() => navigate("/")}
+          className="inline-flex items-center bg-[#002855] px-4 py-2 rounded hover:opacity-90 transition"
+          aria-label="Go to home"
+        >
+          <span className="text-white font-bold text-lg">PACE</span>
+          <span className="text-[#FDB515] font-bold text-xs ml-1">
+            UNIVERSITY
+          </span>
+        </button>
+      </div>
+
       {/* HEADER */}
-      <div className="bg-white shadow-sm p-4">
+      <div className="bg-white shadow-sm p-4 mt-4">
         <div className="flex items-center gap-3 mb-2">
           <button onClick={() => navigate("/destinations")} className="p-2">
             <ArrowLeft className="w-6 h-6 text-[#002855]" />
@@ -115,25 +131,40 @@ export default function MapPage() {
       </div>
 
       {/* MAP */}
-      <div className="flex-1 relative">
-        {isLoaded ? (
+      <div className="relative" style={{ height: "60vh" }}>
+        {isLoaded && destination ? (
           <GoogleMap
-            onLoad={(map) => {
-              mapRef.current = map;
-            }}
             mapContainerStyle={{ width: "100%", height: "100%" }}
             center={{ lat: destination.latitude, lng: destination.longitude }}
             zoom={16}
+            options={{
+              disableDefaultUI: true,
+              gestureHandling: "greedy",
+            }}
+            onLoad={(map) => {
+              mapRef.current = map;
+            }}
           >
-            {userPos && <Marker position={userPos} icon={{ url: BLUE_DOT }} />}
+            {userPos && (
+              <Marker position={userPos} icon={{ url: BLUE_DOT }} />
+            )}
+
             <Marker
-              position={{ lat: destination.latitude, lng: destination.longitude }}
+              position={{
+                lat: destination.latitude,
+                lng: destination.longitude,
+              }}
               icon={{ url: RED_DOT }}
             />
+
             {route?.polyline && (
               <Polyline
                 path={route.polyline}
-                options={{ strokeColor: "#002855", strokeWeight: 5 }}
+                options={{
+                  strokeColor: "#002855",
+                  strokeOpacity: 0.9,
+                  strokeWeight: 5,
+                }}
               />
             )}
           </GoogleMap>
